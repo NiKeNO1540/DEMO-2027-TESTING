@@ -68,19 +68,19 @@ if ! check_stage 1; then
     log_message "Создание директорий для сетевых интерфейсов"
     apt-get reinstall tzdata -y
     timedatectl set-timezone Asia/Yekaterinburg
-    mkdir -p /etc/net/ifaces/ens21
-    mkdir -p /etc/net/ifaces/ens22
+    mkdir -p /etc/net/ifaces/enp7s2
+    mkdir -p /etc/net/ifaces/enp7s3
     log_message "Директории созданы: /etc/net/ifaces/ens21, /etc/net/ifaces/ens22"
 
     log_message "Создание конфигурационных файлов для сетевых интерфейсов"
-    echo -e "BOOTPROTO=static\nTYPE=eth\nDISABLED=no\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens21/options
-    echo -e "BOOTPROTO=static\nTYPE=eth\nDISABLED=no\nCONFIG_IPV4=yes" > /etc/net/ifaces/ens22/options
+    echo -e "BOOTPROTO=static\nTYPE=eth\nDISABLED=no\nCONFIG_IPV4=yes" > /etc/net/ifaces/enp7s2/options
+    echo -e "BOOTPROTO=static\nTYPE=eth\nDISABLED=no\nCONFIG_IPV4=yes" > /etc/net/ifaces/enp7s3/options
     log_message "Конфигурационные файлы options созданы"
 
     log_message "Назначение IP-адресов интерфейсам"
-    echo "172.16.1.1/28" > /etc/net/ifaces/ens21/ipv4address
-    echo "172.16.2.1/28" > /etc/net/ifaces/ens22/ipv4address
-    log_message "IP-адреса назначены: ens21=172.16.1.1/28, ens22=172.16.2.1/28"
+    echo "172.16.1.1/28" > /etc/net/ifaces/enp7s2/ipv4address
+    echo "172.16.2.1/28" > /etc/net/ifaces/enp7s3/ipv4address
+    log_message "IP-адреса назначены: enp7s2=172.16.1.1/28, enp7s3=172.16.2.1/28"
 
     log_message "Перезапуск сетевой службы"
     systemctl restart network
@@ -110,8 +110,8 @@ if ! check_stage 2; then
     fi
 
     log_message "Настройка правил NAT"
-    iptables -t nat -A POSTROUTING -o ens20 -s 172.16.1.0/28 -j MASQUERADE
-    iptables -t nat -A POSTROUTING -o ens20 -s 172.16.2.0/28 -j MASQUERADE
+    iptables -t nat -A POSTROUTING -o enp7s1 -s 172.16.1.0/28 -j MASQUERADE
+    iptables -t nat -A POSTROUTING -o enp7s1 -s 172.16.2.0/28 -j MASQUERADE
     log_message "Правила NAT добавлены"
 
     log_message "Сохранение правил iptables"
@@ -149,8 +149,8 @@ if ! check_stage 3; then
     fi
 
     log_message "Добавление ключей хостов в known_hosts"
-    grep -q "172.16.1.4" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -H 172.16.1.4 >> ~/.ssh/known_hosts
-    grep -q "172.16.2.5" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -H 172.16.2.5 >> ~/.ssh/known_hosts
+    grep -q "172.16.1.10" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -H 172.16.1.10 >> ~/.ssh/known_hosts
+    grep -q "172.16.2.10" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -H 172.16.2.10 >> ~/.ssh/known_hosts
     log_message "Ключи хостов добавлены в known_hosts"
 
     log_message "Установка sshpass"
@@ -166,18 +166,18 @@ if ! check_stage 3; then
     fi
 
     log_message "Копирование SSH-ключа на удаленные хосты"
-    sshpass -p 'admin' ssh-copy-id -o ConnectTimeout=10 admin@172.16.1.4 2>/dev/null
+    sshpass -p 'admin' ssh-copy-id -o ConnectTimeout=10 admin@172.16.1.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на 172.16.1.4"
+        log_message "Ключ скопирован на 172.16.1.10"
     else
-        log_message "Ошибка копирования ключа на 172.16.1.4"
+        log_message "Ошибка копирования ключа на 172.16.1.10"
     fi
 
-    sshpass -p 'admin' ssh-copy-id -o ConnectTimeout=10 admin@172.16.2.5 2>/dev/null
+    sshpass -p 'admin' ssh-copy-id -o ConnectTimeout=10 admin@172.16.2.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на 172.16.2.5"
+        log_message "Ключ скопирован на 172.16.2.10"
     else
-        log_message "Ошибка копирования ключа на 172.16.2.5"
+        log_message "Ошибка копирования ключа на 172.16.2.10"
     fi
     
     create_backup 3
@@ -191,16 +191,16 @@ if ! check_stage 4; then
     echo "=== Этап 4: Настройка HQ-RTR|BR-RTR-Коммутация ==="
     log_message "Начало этапа 4: Настройка маршрутизаторов"
     
-    log_message "Переход в директорию DEMO-2025-testing"
-    if [ -d "DEMO-2025-testing" ]; then
-        cd DEMO-2025-testing
+    log_message "Переход в директорию DEMO-2027-TESTING"
+    if [ -d "DEMO-2027-testing" ]; then
+        cd DEMO-2027-TESTING
         if [ $? -eq 0 ]; then
-            log_message "Успешно перешли в DEMO-2025-testing"
+            log_message "Успешно перешли в DEMO-2027-testing"
         else
-            log_message "Ошибка перехода в DEMO-2025-testing"
+            log_message "Ошибка перехода в DEMO-2027-testing"
         fi
     else
-        log_message "Директория DEMO-2025-testing не найдена"
+        log_message "Директория DEMO-2027-TESTING не найдена"
     fi
 
     log_message "Обновление пакетов"
@@ -228,8 +228,8 @@ if ! check_stage 4; then
     fi
 
     log_message "Запуск expect скриптов"
-    if [ -f "hq-rtr-module-1.exp" ]; then
-        expect hq-rtr-module-1.exp
+    if [ -f "sudo-hq-rtr.exp" ]; then
+        expect sudo-hq-rtr.exp
         if [ $? -eq 0 ]; then
             log_message "hq-rtr-module-1.exp выполнен успешно"
         else
@@ -237,8 +237,8 @@ if ! check_stage 4; then
         fi
     fi
 
-    if [ -f "br-rtr-module-1.exp" ]; then
-        expect br-rtr-module-1.exp
+    if [ -f "sudo-br-rtr.exp" ]; then
+        expect sudo-br-rtr.exp
         if [ $? -eq 0 ]; then
             log_message "br-rtr-module-1.exp выполнен успешно"
         else
@@ -258,31 +258,31 @@ if ! check_stage 5; then
     log_message "Начало этапа 5: Окончательная раздача ключей"
     
     log_message "Добавление ключей для альтернативных портов"
-    grep -q "172.16.1.4:2026" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -p 2026 172.16.1.4 >> ~/.ssh/known_hosts
-    grep -q "172.16.2.5:2026" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -p 2026 172.16.2.5 >> ~/.ssh/known_hosts
-    grep -q "172.16.1.4:2222" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -p 2222 172.16.1.4 >> ~/.ssh/known_hosts
+    grep -q "172.16.1.10:2026" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -p 2026 172.16.1.10 >> ~/.ssh/known_hosts
+    grep -q "172.16.2.10:2026" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -p 2026 172.16.2.10 >> ~/.ssh/known_hosts
+    grep -q "172.16.1.10:2222" ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan -p 2222 172.16.1.10 >> ~/.ssh/known_hosts
     log_message "Ключи для альтернативных портов добавлены"
 
     log_message "Копирование ключей на root пользователей"
-    sshpass -p 'toor' ssh-copy-id -p 2026 -o ConnectTimeout=10 root@172.16.2.5 2>/dev/null
+    sshpass -p 'toor' ssh-copy-id -p 2026 -o ConnectTimeout=10 root@172.16.2.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на root@172.16.2.5:2026"
+        log_message "Ключ скопирован на root@172.16.2.10:2026"
     else
-        log_message "Ошибка копирования ключа на root@172.16.2.5:2026"
+        log_message "Ошибка копирования ключа на root@172.16.2.10:2026"
     fi
 
-    sshpass -p 'toor' ssh-copy-id -p 2026 -o ConnectTimeout=10 root@172.16.1.4 2>/dev/null
+    sshpass -p 'toor' ssh-copy-id -p 2026 -o ConnectTimeout=10 root@172.16.1.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на root@172.16.1.4:2026"
+        log_message "Ключ скопирован на root@172.16.1.10:2026"
     else
-        log_message "Ошибка копирования ключа на root@172.16.1.4:2026"
+        log_message "Ошибка копирования ключа на root@172.16.1.10:2026"
     fi
 
-    sshpass -p 'toor' ssh-copy-id -p 2222 -o ConnectTimeout=10 root@172.16.1.4 2>/dev/null
+    sshpass -p 'toor' ssh-copy-id -p 2222 -o ConnectTimeout=10 root@172.16.1.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на root@172.16.1.4:2222"
+        log_message "Ключ скопирован на root@172.16.1.10:2222"
     else
-        log_message "Ошибка копирования ключа на root@172.16.1.4:2222"
+        log_message "Ошибка копирования ключа на root@172.16.1.10:2222"
     fi
     
     create_backup 5
@@ -297,25 +297,25 @@ if ! check_stage 6; then
     log_message "Начало этапа 6: Смена hostname удаленных машин"
     
     log_message "Смена hostname на удаленных машинах"
-    echo "hostnamectl set-hostname hq-srv.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.4
+    echo "hostnamectl set-hostname hq-srv.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10
     if [ $? -eq 0 ]; then
-        log_message "Hostname изменен на hq-srv.au-team.irpo (172.16.1.4:2026)"
+        log_message "Hostname изменен на hq-srv.au-team.irpo (172.16.1.10:2026)"
     else
-        log_message "Ошибка смены hostname на 172.16.1.4:2026"
+        log_message "Ошибка смены hostname на 172.16.1.10:2026"
     fi
 
-    echo "hostnamectl set-hostname hq-cli.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.4
+    echo "hostnamectl set-hostname hq-cli.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10
     if [ $? -eq 0 ]; then
-        log_message "Hostname изменен на hq-cli.au-team.irpo (172.16.1.4:2222)"
+        log_message "Hostname изменен на hq-cli.au-team.irpo (172.16.1.10:2222)"
     else
-        log_message "Ошибка смены hostname на 172.16.1.4:2222"
+        log_message "Ошибка смены hostname на 172.16.1.10:2222"
     fi
 
-    echo "hostnamectl set-hostname br-srv.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.5
+    echo "hostnamectl set-hostname br-srv.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10
     if [ $? -eq 0 ]; then
-        log_message "Hostname изменен на br-srv.au-team.irpo (172.16.2.5:2026)"
+        log_message "Hostname изменен на br-srv.au-team.irpo (172.16.2.10:2026)"
     else
-        log_message "Ошибка смены hostname на 172.16.2.5:2026"
+        log_message "Ошибка смены hostname на 172.16.2.10:2026"
     fi
     
     mark_stage_completed 6
@@ -346,7 +346,7 @@ if ! check_stage 7; then
     if ! check_step "7.1_HQ-SRV-Launch"; then
         log_message "Запуск HQ-SRV-Launch.sh на удаленном хосте"
         if [ -f "HQ-SRV-Launch.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.4 "bash -s" < HQ-SRV-Launch.sh
+            sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < HQ-SRV-Launch.sh
             if [ $? -eq 0 ]; then
                 log_message "HQ-SRV-Launch.sh выполнен успешно"
                 mark_step_completed "7.1_HQ-SRV-Launch"
@@ -362,7 +362,7 @@ if ! check_stage 7; then
     if ! check_step "7.2_samba-part-1"; then
         log_message "Запуск samba-part-1.sh"
         if [ -f "samba-part-1.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.5 "bash -s" < samba-part-1.sh
+            sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < samba-part-1.sh
             if [ $? -eq 0 ]; then
                 log_message "samba-part-1.sh выполнен успешно"
                 mark_step_completed "7.2_samba-part-1"
@@ -377,7 +377,7 @@ if ! check_stage 7; then
     # --- Шаг 7.3 Настройка клиента на DHCP ---
     if ! check_step "7.3_set-dhcp"; then
         log_message "Настройка DNS: переключение клиента в DHCP"
-        cat << EOF | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=10 root@172.16.1.4
+        cat << EOF | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=10 root@172.16.1.10
 sed -i 's/BOOTPROTO=static/BOOTPROTO=dhcp/' /etc/net/ifaces/ens20/options
 systemctl restart network
 EOF
@@ -395,7 +395,7 @@ EOF
     if ! check_step "7.4_dns-client"; then
         sleep 8
         log_message "Настройка DNS на клиенте"
-        cat << EOF | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=10 root@172.16.1.4
+        cat << EOF | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=10 root@172.16.1.10
 apt-get update && apt-get install bind-utils admc yandex-browser -y
 system-auth write ad AU-TEAM.IRPO cli AU-TEAM 'administrator' 'P@ssw0rd'
 hostnamectl set-hostname hq-cli.au-team.irpo
@@ -413,7 +413,7 @@ EOF
     # --- Шаг 7.5 Перезагрузка клиента ---
     if ! check_step "7.5_reboot-client"; then
         log_message "Перезагрузка клиента"
-        echo "reboot" | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=5 root@172.16.1.4
+        echo "reboot" | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=5 root@172.16.1.10
         log_message "Клиент перезагружается, ожидание 30 секунд"
         sleep 30
         mark_step_completed "7.5_reboot-client"
@@ -425,7 +425,7 @@ EOF
     if ! check_step "7.6_samba-part-2"; then
         log_message "Запуск samba-part-2.sh"
         if [ -f "samba-part-2.sh" ]; then
-            sshpass -p 'toor' ssh -p 2026 -o ConnectTimeout=10 root@172.16.2.5 "bash -s" < samba-part-2.sh
+            sshpass -p 'toor' ssh -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < samba-part-2.sh
             if [ $? -eq 0 ]; then
                 log_message "samba-part-2.sh выполнен успешно"
                 mark_step_completed "7.6_samba-part-2"
@@ -442,8 +442,8 @@ EOF
     if ! check_step "7.7_cli-sssd-part1"; then
         log_message "Запуск cli-sssd-part1.sh"
         if [ -f "cli-sssd-part1.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.4 "bash -s" < cli-sssd-part1.sh
-            echo "reboot" | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=5 root@172.16.1.4
+            sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < cli-sssd-part1.sh
+            echo "reboot" | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=5 root@172.16.1.10
             if [ $? -eq 0 ]; then
                 log_message "cli-sssd-part1.sh выполнен успешно"
                 mark_step_completed "7.7_cli-sssd-part1"
@@ -460,7 +460,7 @@ EOF
     if ! check_step "7.8_cli-sssd-part2"; then
         log_message "Запуск cli-sssd-part2.sh"
         if [ -f "cli-sssd-part2.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.4 "bash -s" < cli-sssd-part2.sh
+            sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < cli-sssd-part2.sh
             if [ $? -eq 0 ]; then
                 log_message "cli-sssd-part2.sh выполнен успешно"
                 mark_step_completed "7.8_cli-sssd-part2"
@@ -515,7 +515,7 @@ EOF
     fi
 
     log_message "Настройка chrony на удаленных хостах"
-    cat << EOF | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.4
+    cat << EOF | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10
 which chronyd >/dev/null 2>&1 || apt-get install chrony -y
 echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
 systemctl enable --now chronyd
@@ -524,12 +524,12 @@ sleep 5
 timedatectl
 EOF
     if [ $? -eq 0 ]; then
-        log_message "Chrony настроен на 172.16.1.4:2222"
+        log_message "Chrony настроен на 172.16.1.10:2222"
     else
-        log_message "Ошибка настройки chrony на 172.16.1.4:2222"
+        log_message "Ошибка настройки chrony на 172.16.1.10:2222"
     fi
 
-    cat << EOF | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.4
+    cat << EOF | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10
 which chronyd >/dev/null 2>&1 || apt-get install chrony -y
 echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
 systemctl enable --now chronyd
@@ -538,12 +538,12 @@ sleep 5
 timedatectl
 EOF
     if [ $? -eq 0 ]; then
-        log_message "Chrony настроен на 172.16.1.4:2026"
+        log_message "Chrony настроен на 172.16.1.10:2026"
     else
-        log_message "Ошибка настройки chrony на 172.16.1.4:2026"
+        log_message "Ошибка настройки chrony на 172.16.1.10:2026"
     fi
 
-    cat << EOF | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.5
+    cat << EOF | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10
 which chronyd >/dev/null 2>&1 || apt-get install chrony -y
 echo -e 'server 172.16.2.1 iburst prefer' > /etc/chrony.conf
 systemctl enable --now chronyd
@@ -552,9 +552,9 @@ sleep 5
 timedatectl
 EOF
     if [ $? -eq 0 ]; then
-        log_message "Chrony настроен на 172.16.2.5:2026"
+        log_message "Chrony настроен на 172.16.2.10:2026"
     else
-        log_message "Ошибка настройки chrony на 172.16.2.5:2026"
+        log_message "Ошибка настройки chrony на 172.16.2.10:2026"
     fi
     
     create_backup 8
@@ -570,7 +570,7 @@ if ! check_stage 9; then
     
     log_message "Настройка RAID на HQ-SRV"
     if [ -f "Raid-HQ-SRV.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.4 "bash -s" < Raid-HQ-SRV.sh
+        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < Raid-HQ-SRV.sh
         if [ $? -eq 0 ]; then
             log_message "Raid-HQ-SRV.sh выполнен успешно"
         else
@@ -582,7 +582,7 @@ if ! check_stage 9; then
 
     log_message "Настройка RAID на HQ-CLI"
     if [ -f "Raid-HQ-CLI.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.4 "bash -s" < Raid-HQ-CLI.sh
+        sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < Raid-HQ-CLI.sh
         if [ $? -eq 0 ]; then
             log_message "Raid-HQ-CLI.sh выполнен успешно"
         else
@@ -607,7 +607,7 @@ if ! check_stage 10; then
     
     log_message "Установка Ansible на BR-SRV"
     if [ -f "Ansible-BR-SRV.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.5 "bash -s" < Ansible-BR-SRV.sh
+        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < Ansible-BR-SRV.sh
         if [ $? -eq 0 ]; then
             log_message "Ansible-BR-SRV.sh выполнен успешно"
         else
@@ -632,7 +632,7 @@ if ! check_stage 11; then
     
     log_message "Копирование site.yml на BR-SRV"
     if [ -f "site.yml" ]; then
-        scp -P 2026 -o ConnectTimeout=10 site.yml root@172.16.2.5:/root/site.yml
+        scp -P 2026 -o ConnectTimeout=10 site.yml root@172.16.2.10:/root/site.yml
         if [ $? -eq 0 ]; then
             log_message "site.yml успешно скопирован на BR-SRV"
         else
@@ -644,7 +644,7 @@ if ! check_stage 11; then
 
     log_message "Установка Docker на BR-SRV"
     if [ -f "docker.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.5 "bash -s" < docker.sh
+        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < docker.sh
         if [ $? -eq 0 ]; then
             log_message "docker.sh выполнен успешно"
         else
@@ -680,7 +680,7 @@ if ! check_stage 12; then
     
     log_message "Установка сайта на HQ-SRV"
     if [ -f "site.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.4 "bash -s" < site.sh
+        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < site.sh
         if [ $? -eq 0 ]; then
             log_message "site.sh выполнен успешно"
         else
@@ -734,7 +734,7 @@ server {
     auth_basic_user_file /etc/nginx/.htpasswd;
     
     location / {
-        proxy_pass http://172.16.2.5:8080;
+        proxy_pass http://172.16.2.10:8080;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
     }
@@ -745,7 +745,7 @@ server {
     server_name docker.au-team.irpo;
     
     location / {
-        proxy_pass http://172.16.1.4:8080;
+        proxy_pass http://172.16.1.10:8080;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
     }
@@ -795,7 +795,7 @@ if ! check_stage 14; then
     log_message "Начало этапа 14: Установка Yandex Browser на HQ-CLI"
     
     log_message "Установка Yandex Browser на HQ-CLI"
-    echo "apt-get update && apt-get install yandex-browser -y" | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.4
+    echo "apt-get update && apt-get install yandex-browser -y" | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10
     if [ $? -eq 0 ]; then
         log_message "Yandex Browser успешно установлен на HQ-CLI"
     else
@@ -822,15 +822,15 @@ if ! check_stage 15; then
 
     # Проверка копирования ключа на hquser1 (повторная попытка если нужно)
     log_message "Попытка копирования ключа на hquser1"
-    sshpass -p 'P@ssw0rd' ssh-copy-id -p 2222 -o ConnectTimeout=10 hquser1@172.16.1.4 2>/dev/null
+    sshpass -p 'P@ssw0rd' ssh-copy-id -p 2222 -o ConnectTimeout=10 hquser1@172.16.1.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на hquser1@172.16.1.4:2222"
+        log_message "Ключ скопирован на hquser1@172.16.1.10:2222"
     else
-        log_message "Ошибка копирования ключа на hquser1@172.16.1.4:2222"
+        log_message "Ошибка копирования ключа на hquser1@172.16.1.10:2222"
     fi
 
     log_message "Проверка прав доступа"
-    cat << EOF | sshpass -p 'P@ssw0rd' ssh -p 2222 -o ConnectTimeout=10 hquser1@172.16.1.4 2>/dev/null
+    cat << EOF | sshpass -p 'P@ssw0rd' ssh -p 2222 -o ConnectTimeout=10 hquser1@172.16.1.10 2>/dev/null
 sudo cat /etc/passwd | grep root && sudo id root
 EOF
     if [ $? -eq 0 ]; then
@@ -840,7 +840,7 @@ EOF
     fi
 
 
-    cat << EOF | sshpass -p 'toor' ssh -p 2026 root@172.16.1.4
+    cat << EOF | sshpass -p 'toor' ssh -p 2026 root@172.16.1.10
     echo -e 'AllowUsers sshuser\nMaxAuthTries 2\nBanner /root/banner' >> /etc/openssh/sshd_config
     echo 'Authorized Access Only' > /root/banner
     sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
@@ -850,7 +850,7 @@ EOF
     systemctl restart sshd
 EOF
 
-    cat << EOF | sshpass -p 'toor' ssh -p 2026 root@172.16.2.5
+    cat << EOF | sshpass -p 'toor' ssh -p 2026 root@172.16.2.10
     echo -e 'AllowUsers sshuser\nMaxAuthTries 2\nBanner /root/banner' >> /etc/openssh/sshd_config
     echo 'Authorized Access Only' > /root/banner
     sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
