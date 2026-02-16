@@ -103,7 +103,7 @@ gpasswd -a "sshuser" wheel
 echo -e "AllowUsers sshuser" >> /etc/openssh/sshd_config
 systemctl enable --now sshd
 systemctl restart sshd
-useradd sshuser -u 2026
+useradd sshuser
 echo -e "sshuser:P@ssw0rd" | chpasswd
 visudo
 # Пишите 140, потом Shift+G > Стрелка вправо > Нажать "D" затем стрелка вправо > :wq
@@ -112,11 +112,13 @@ gpasswd -a "sshuser" wheel
 
 ### HQ-RTR | BR-RTR
 ```bash
+echo -e "AllowUsers net_admin" >> /etc/openssh/sshd_config
+systemctl enable --now sshd
+systemctl restart sshd
 useradd net_admin
 echo -e "net_admin:P@ssw0rd" | chpasswd
 usermod -aG wheel net_admin
 id net_admin
-systemctl enable --now sshd
 ```
 
 # Инструкция для активации ISP-a
