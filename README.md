@@ -23,56 +23,29 @@
 <img width="605" height="279" alt="image" src="https://github.com/user-attachments/assets/7e654fa2-ff0b-4521-9697-baffeab4a304" />
 
 
-## HQ-RTR | BR-RTR (Ecorouter)
+## HQ-RTR | BR-RTR (Alt JEos)
 
 - Базовая коммутация до ISP-a.
 
-> Название пользователя: admin, пароль: admin
+> Название пользователя: root, пароль: toor
 
 ### HQ-RTR
 
-```tcl
-en
-conf t
-interface int0
-description "to isp"
-ip address 172.16.1.4/28
-exit
-port te0
-service-instance te0/int0
-encapsulation untagged
-exit
-exit
-interface int0
-connect port te0 service-instance te0/int0
-exit
-ip route 0.0.0.0 0.0.0.0 172.16.1.1
-no security default
-exit
-wr
+```bash
+echo -e "TYPE=eth" > /etc/net/ifaces/enp7s1/options
+echo 172.16.1.10/28 > /etc/net/ifaces/enp7s1/ipv4address
+echo default via 172.16.1.1 > /etc/net/ifaces/enp7s1/ipv4route
+systemctl restart network
 ```
 
 ### BR-RTR
 
-```tcl
-en
-conf t
-interface int0
-description "to isp"
-ip address 172.16.2.5/28
-exit
-port te0
-service-instance te0/int0
-encapsulation untagged
-exit
-exit
-interface int0
-connect port te0 service-instance te0/int0
-exit
-ip route 0.0.0.0 0.0.0.0 172.16.2.1
-no security default
-exit
-wr
+```bash
+mkdir /etc/net/ifaces/enp7s2
+echo 'TYPE=eth' > /etc/net/ifaces/enp7s1/options
+echo 172.16.2.10/28 > /etc/net/ifaces/enp7s1/ipv4address
+echo default via 172.16.2.1 > /etc/net/ifaces/enp7s1/ipv4route
+systemctl restart network
 ```
 
 ## HQ-SRV | HQ-CLI | BR-SRV
@@ -84,63 +57,70 @@ wr
 ### HQ-SRV
 
 ```bash
-mkdir -p /etc/net/ifaces/ens20
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPv4=yes" > /etc/net/ifaces/ens20/options
-echo "192.168.1.10/27" > /etc/net/ifaces/ens20/ipv4address
-echo "default via 192.168.1.1" > /etc/net/ifaces/ens20/ipv4route
+echo 'TYPE=eth' > /etc/net/ifaces/enp7s1/options
+echo 192.168.1.10/27 > /etc/net/ifaces/enp7s1/ipv4address
+echo default via 192.168.1.1 > /etc/net/ifaces/enp7s1/ipv4route
 systemctl restart network
 ```
 
 ### HQ-CLI
 
 ```bash
-mkdir -p /etc/net/ifaces/ens20
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPv4=yes" > /etc/net/ifaces/ens20/options
-echo "192.168.2.10/28" > /etc/net/ifaces/ens20/ipv4address
-echo "default via 192.168.2.1" > /etc/net/ifaces/ens20/ipv4route
+echo 'TYPE=eth' > /etc/net/ifaces/enp7s1/options 
+echo 192.168.3.10/28 > /etc/net/ifaces/enp7s1/ipv4address
+echo default via 192.168.3.1 > /etc/net/ifaces/enp7s1/ipv4route
 systemctl restart network
 ```
 
 ### BR-SRV
 
 ```bash
-mkdir -p /etc/net/ifaces/ens20
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=static\nCONFIG_IPv4=yes" > /etc/net/ifaces/ens20/options
-echo "192.168.3.10/28" > /etc/net/ifaces/ens20/ipv4address
-echo "default via 192.168.3.1" > /etc/net/ifaces/ens20/ipv4route
+echo 'TYPE=eth' > /etc/net/ifaces/enp7s1/options 
+echo 192.168.2.10/28 > /etc/net/ifaces/enp7s1/ipv4address 
+echo default via 192.168.2.1 > /etc/net/ifaces/enp7s1/ipv4route 
 systemctl restart network
 ```
 
-- Разрешение на логирование через root(делайте только в случае автоматизации, в реальной жизни никто так делать конечно же не будет, всё сделано в целях автоматизации)
-
 ### BR-SRV | HQ-SRV 
 
+- Разрешение на логирование через sshuser|net_admin по ssh
+- Возможность использования sudo **без требования пароля** [Исключая HQ-RTR|BR-RTR]
+
+
 ```bash
-echo -e "PermitRootLogin yes\nPort 2026" >> /etc/openssh/sshd_config
+echo -e "Port 2026\nAllowUsers sshuser" >> /etc/openssh/sshd_config
 systemctl enable --now sshd
 systemctl restart sshd
+useradd sshuser -u 2026
+echo -e "sshuser:P@ssw0rd" | chpasswd
+visudo
+# Пишите 140, потом Shift+G > Стрелка вправо > Нажать "D" затем стрелка вправо > :wq
+gpasswd -a "sshuser" wheel
 ```
 
 ### HQ-CLI
 ```bash
-echo -e "PermitRootLogin yes\nPort 2222" >> /etc/openssh/sshd_config
+echo -e "AllowUsers sshuser" >> /etc/openssh/sshd_config
 systemctl enable --now sshd
 systemctl restart sshd
+useradd sshuser -u 2026
+echo -e "sshuser:P@ssw0rd" | chpasswd
+visudo
+# Пишите 140, потом Shift+G > Стрелка вправо > Нажать "D" затем стрелка вправо > :wq
+gpasswd -a "sshuser" wheel
 ```
 
-## ISP
-
-- Настройка DHCP интерфейса
-
+### HQ-RTR | BR-RTR
 ```bash
-mkdir -p /etc/net/ifaces/ens20
-echo -e "DISABLED=no\nTYPE=eth\nBOOTPROTO=dhcp\nCONFIG_IPv4=yes" > /etc/net/ifaces/ens20/options
-echo "net.ipv4.ip_forward = 1" >> /etc/net/sysctl.conf
-systemctl restart network
+useradd net_admin
+echo -e "net_admin:P@ssw0rd" | chpasswd
+usermod -aG wheel net_admin
+id net_admin
+systemctl enable --now sshd
 ```
 
 # Инструкция для активации ISP-a
 
 ```bash
-apt-get update && apt-get install git -y && git clone https://github.com/NiKeNO1540/DEMO-2025-testing && chmod +x DEMO-2025-testing/Full_Config_Progression_AIO.sh && ./DEMO-2025-testing/Full_Config_Progression_AIO.sh
+apt-get update && apt-get install git -y && git clone https://github.com/NiKeNO1540/DEMO-2027-testing && chmod +x DEMO-2027-testing/Full_Config_Progression_AIO.sh && ./DEMO-2027-testing/Full_Config_Progression_AIO.sh
 ```
