@@ -100,7 +100,7 @@ gpasswd -a "sshuser" wheel
 
 ### HQ-CLI
 ```bash
-echo -e "AllowUsers sshuser" >> /etc/openssh/sshd_config
+echo -e "Port 2222\nAllowUsers sshuser" >> /etc/openssh/sshd_config
 systemctl enable --now sshd
 systemctl restart sshd
 useradd sshuser
