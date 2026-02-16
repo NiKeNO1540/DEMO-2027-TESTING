@@ -1,16 +1,13 @@
 #! /bin/bash
 
-useradd sshuser -u 2026
-echo -e "sshuser:P@ssw0rd" | chpasswd
 timedatectl set-timezone Asia/Yekaterinburg
 
 echo nameserver 8.8.8.8 >> /etc/resolv.conf
 
-# Обновление, установка утилиты dnsmasq
-
 apt-get update
-apt-get install dnsmasq -y
-systemctl enable --now dnsmasq
+apt-get install bind bind-utils -y
+sed -i 's/listen-on { 127.0.0.1; };/listen-on { 192.168.1.10; };/' /var/lib/bind/etc/options.conf
+sed -i 's/listen-on-v6 { ::1; };/listen-on-v6 { none; };/' /var/lib/bind/etc/options.conf
 
 cat << EOF >> /etc/dnsmasq.conf
 no-resolv
