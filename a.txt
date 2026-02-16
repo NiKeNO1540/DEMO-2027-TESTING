@@ -1,0 +1,176 @@
+-----------------------------------HQ-RTR---------------------------------------------
+en
+conf t
+hostname hq-rtr
+ip domain-name au-team.irpo
+
+username net_admin
+password P@ssw0rd
+role admin
+exit
+
+interface int0
+description "to isp"
+ip address 172.16.4.4/28
+exit
+port te0
+service-instance te0/int0
+encapsulation untagged
+exit
+exit
+interface int0
+connect port te0 service-instance te0/int0
+exit
+interface int1
+description "to hq-srv"
+ip address 192.168.1.1/26
+exit
+interface int2
+description "to hq-cli"
+ip address 192.168.2.1/28
+exit
+port te1
+service-instance te1/int1
+encapsulation dot1q 100
+rewrite pop 1
+exit
+service-instance te1/int2
+encapsulation dot1q 200
+rewrite pop 1
+exit
+exit
+interface int1
+connect port te1 service-instance te1/int1
+interface int2
+connect port te1 service-instance te1/int2
+exit
+
+interface int3
+description 999
+ip address 192.168.99.1/29
+exit
+port te1
+service-instance te1/int3
+encapsulation dot1q 999
+rewrite pop 1
+exit
+exit
+interface int3
+connect port te1 service-instance te1/int3
+exit
+
+int tunnel.0
+ip add 172.16.0.1/30
+ip mtu 1400
+ip tunnel 172.16.4.4 172.16.5.5 mode gre
+ip ospf authentication-key ecorouter
+exit
+
+router ospf 1
+network 172.16.0.0/30 area 0
+network 192.168.1.0/26 area 0
+network 192.168.2.0/28 area 0
+passive-interface default
+no passive-interface tunnel.0
+area 0 authentication
+exit
+
+int int1
+ip nat inside
+exit
+int int2
+ip nat inside
+exit
+int int0
+ip nat outside
+exit
+ip nat pool NAT_POOL 192.168.1.1-192.168.1.254,192.168.2.1-192.168.2.254
+ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
+
+ip pool cli_pool 192.168.2.10-192.168.2.10
+dhcp-server 1
+pool cli_pool 1
+mask 255.255.255.240
+gateway 192.168.2.1
+dns 192.168.1.10
+domain-name au-team.irpo
+exit
+exit
+interface int2
+dhcp-server 1
+exit
+ntp timezone utc+5
+ip route 0.0.0.0/0 172.16.4.1
+exit
+wr
+exit
+-----------------------------------BR-RTR---------------------------------------------
+en
+conf t
+hostname br-rtr
+ip domain-name au-team.irpo
+
+username net_admin
+password P@ssw0rd
+role admin
+exit
+
+ntp timezone utc+5
+
+interface int0
+	description "to isp"
+	ip address 172.16.5.5/28
+	exit
+port te0
+	service-instance te0/int0
+		encapsulation untagged
+		exit
+	exit
+interface int0
+	connect port te0 service-instance te0/int0
+	exit
+interface int1
+	description "to isp"
+	ip address 192.168.3.1/27
+	exit
+port te1
+	service-instance te1/int1
+		encapsulation untagged
+		exit
+	exit
+interface int1
+	connect port te1 service-instance te1/int1
+	exit
+ip route 0.0.0.0 0.0.0.0 172.16.5.1
+
+int tunnel.0
+ip add 172.16.0.2/30
+ip mtu 1400
+ip tunnel 172.16.5.5 172.16.4.4 mode gre
+ip ospf authentication-key ecorouter
+exit
+
+router ospf 1
+network 172.16.0.0/30 area 0
+network 192.168.3.0/27 area 0
+passive-interface default
+no passive-interface tunnel.0
+area 0 authentication
+exit
+
+
+int int1
+	ip nat inside
+	exit
+int int0
+	ip nat outside
+	exit
+ip nat pool NAT_POOL 192.168.3.1-192.168.3.254
+ip nat source dynamic inside-to-outside pool NAT_POOL overload interface int0
+exit
+
+wr
+exit
+ 
+
+
