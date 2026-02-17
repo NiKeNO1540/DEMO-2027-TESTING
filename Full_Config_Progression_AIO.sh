@@ -80,6 +80,7 @@ if ! check_stage 1; then
     log_message "Назначение IP-адресов интерфейсам"
     echo "172.16.1.1/28" > /etc/net/ifaces/enp7s2/ipv4address
     echo "172.16.2.1/28" > /etc/net/ifaces/enp7s3/ipv4address
+    sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
     log_message "IP-адреса назначены: enp7s2=172.16.1.1/28, enp7s3=172.16.2.1/28"
 
     log_message "Перезапуск сетевой службы"
@@ -245,6 +246,7 @@ if ! check_stage 4; then
             sudo echo '192.168.1.1/27' > /etc/net/ifaces/vlan100/ipv4address
             sudo echo '192.168.2.1/28' > /etc/net/ifaces/vlan200/ipv4address
             sudo echo '192.168.99.1/29' > /etc/net/ifaces/vlan999/ipv4address
+            sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
             sudo systemctl restart network
 EOF
         else
@@ -260,6 +262,7 @@ EOF
             sudo mkdir /etc/net/ifaces/enp7s2
             sudo echo 'TYPE=eth' > /etc/net/ifaces/enp7s2/options
             sudo echo 192.168.3.1/28 > /etc/net/ifaces/enp7s2/ipv4address
+            sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
             sudo systemctl restart network
 EOF
         else
