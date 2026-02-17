@@ -246,7 +246,7 @@ if ! check_stage 4; then
             sudo echo '192.168.2.1/28' > /etc/net/ifaces/vlan200/ipv4address
             sudo echo '192.168.99.1/29' > /etc/net/ifaces/vlan999/ipv4address
             sudo systemctl restart network
-            EOF
+EOF
         else
             log_message "Ошибка выполнения hq-rtr-module-1.exp"
         fi
@@ -261,7 +261,7 @@ if ! check_stage 4; then
             sudo echo 'TYPE=eth' > /etc/net/ifaces/enp7s2/options
             sudo echo 192.168.3.1/28 > /etc/net/ifaces/enp7s2/ipv4address
             sudo systemctl restart network
-            EOF
+EOF
         else
             log_message "Ошибка выполнения br-rtr-module-1.exp"
         fi
