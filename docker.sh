@@ -8,9 +8,9 @@ sudo docker load -i /media/ALTLinux/docker/mariadb_latest.tar
 
 
 sudo cat << EOF >> launch.sh
-docker compose -f site.yml up -d 
-sleep 5 
-docker exec -it db mysql -u root -pPassw0rd -e "
+sudo docker compose -f site.yml up -d 
+sudo sleep 5 
+sudo docker exec -it db mysql -u root -pPassw0rd -e "
 CREATE DATABASE IF NOT EXISTS testdb;
 
 -- Создать пользователя если не существует
@@ -23,4 +23,4 @@ GRANT ALL PRIVILEGES ON testdb.* TO 'test'@'%';
 FLUSH PRIVILEGES;"
 EOF
 
-chmod +x /root/launch.sh
+sudo chmod +x /root/launch.sh
