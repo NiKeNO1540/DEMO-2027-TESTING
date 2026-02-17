@@ -166,14 +166,14 @@ if ! check_stage 3; then
     fi
 
     log_message "Копирование SSH-ключа на удаленные хосты"
-    sshpass -p 'admin' ssh-copy-id -o ConnectTimeout=10 admin@172.16.1.10 2>/dev/null
+    sshpass -p 'P@ssw0rd' ssh-copy-id -o ConnectTimeout=10 net_admin@172.16.1.10 2>/dev/null
     if [ $? -eq 0 ]; then
         log_message "Ключ скопирован на 172.16.1.10"
     else
         log_message "Ошибка копирования ключа на 172.16.1.10"
     fi
 
-    sshpass -p 'admin' ssh-copy-id -o ConnectTimeout=10 admin@172.16.2.10 2>/dev/null
+    sshpass -p 'P@ssw0rd' ssh-copy-id -o ConnectTimeout=10 net_admin@172.16.2.10 2>/dev/null
     if [ $? -eq 0 ]; then
         log_message "Ключ скопирован на 172.16.2.10"
     else
@@ -193,7 +193,7 @@ if ! check_stage 4; then
     
     log_message "Переход в директорию DEMO-2027-TESTING"
     if [ -d "DEMO-2027-testing" ]; then
-        cd DEMO-2027-TESTING
+        cd DEMO-2027-testing
         if [ $? -eq 0 ]; then
             log_message "Успешно перешли в DEMO-2027-testing"
         else
