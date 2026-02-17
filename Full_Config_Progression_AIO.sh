@@ -240,9 +240,9 @@ if ! check_stage 4; then
             sudo mkdir -p /etc/net/ifaces/vlan100
             sudo mkdir -p /etc/net/ifaces/vlan200
             sudo mkdir -p /etc/net/ifaces/vlan999
-            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=100" > /etc/net/ifaces/vlan100/options
-            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=200" > /etc/net/ifaces/vlan200/options
-            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=999" > /etc/net/ifaces/vlan999/options
+            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=100' > /etc/net/ifaces/vlan100/options
+            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=200' > /etc/net/ifaces/vlan200/options
+            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=999' > /etc/net/ifaces/vlan999/options
             sudo echo '192.168.1.1/27' > /etc/net/ifaces/vlan100/ipv4address
             sudo echo '192.168.2.1/28' > /etc/net/ifaces/vlan200/ipv4address
             sudo echo '192.168.99.1/29' > /etc/net/ifaces/vlan999/ipv4address
