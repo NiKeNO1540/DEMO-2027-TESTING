@@ -1,10 +1,10 @@
 #! /bin/bash
 
-apt-get update && apt-get install nfs-clients -y
-mkdir -p /mnt/nfs
-cat << EOF >> /etc/fstab
+sudo apt-get update && sudo apt-get install nfs-clients -y
+sudo mkdir -p /mnt/nfs
+sudo cat << EOF >> /etc/fstab
 192.168.1.10:/raid/nfs  /mnt/nfs  nfs  intr,soft,_netdev,x-systemd.automount  0  0
 EOF
-mount -a
-mount -v
-touch /mnt/nfs/test
+sudo mount -a
+sudo mount -v
+sudo touch /mnt/nfs/test
