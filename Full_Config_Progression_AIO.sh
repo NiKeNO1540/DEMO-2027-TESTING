@@ -232,6 +232,21 @@ if ! check_stage 4; then
         expect sudo-hq-rtr.exp
         if [ $? -eq 0 ]; then
             log_message "hq-rtr-module-1.exp выполнен успешно"
+            cat << EOF | sshpass -p 'P@ssw0rd' ssh net_admin@172.16.1.10
+            sudo hostnamectl hostname hq-rtr.au-team.irpo; exec bash
+            sudo mkdir -p /etc/net/ifaces/enp7s2
+            sudo echo 'TYPE=eth' | tee /etc/net/ifaces/enp7s2/options
+            sudo mkdir -p /etc/net/ifaces/vlan100
+            sudo mkdir -p /etc/net/ifaces/vlan200
+            sudo mkdir -p /etc/net/ifaces/vlan999
+            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=100" > /etc/net/ifaces/vlan100/options
+            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=200" > /etc/net/ifaces/vlan200/options
+            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=999" > /etc/net/ifaces/vlan999/options
+            sudo echo '192.168.1.1/27' > /etc/net/ifaces/vlan100/ipv4address
+            sudo echo '192.168.2.1/28' > /etc/net/ifaces/vlan200/ipv4address
+            sudo echo '192.168.99.1/29' > /etc/net/ifaces/vlan999/ipv4address
+            sudo systemctl restart network
+            EOF
         else
             log_message "Ошибка выполнения hq-rtr-module-1.exp"
         fi
@@ -241,6 +256,12 @@ if ! check_stage 4; then
         expect sudo-br-rtr.exp
         if [ $? -eq 0 ]; then
             log_message "br-rtr-module-1.exp выполнен успешно"
+            cat << EOF | sshpass -p "P@ssw0rd" ssh net_admin@172.16.2.10
+            sudo mkdir /etc/net/ifaces/enp7s2
+            sudo echo 'TYPE=eth' > /etc/net/ifaces/enp7s2/options
+            sudo echo 192.168.3.1/28 > /etc/net/ifaces/enp7s2/ipv4address
+            sudo systemctl restart network
+            EOF
         else
             log_message "Ошибка выполнения br-rtr-module-1.exp"
         fi
@@ -264,25 +285,25 @@ if ! check_stage 5; then
     log_message "Ключи для альтернативных портов добавлены"
 
     log_message "Копирование ключей на root пользователей"
-    sshpass -p 'toor' ssh-copy-id -p 2026 -o ConnectTimeout=10 root@172.16.2.10 2>/dev/null
+    sshpass -p 'P@ssw0rd' ssh-copy-id -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на root@172.16.2.10:2026"
+        log_message "Ключ скопирован на sshuser@172.16.2.10:2026"
     else
-        log_message "Ошибка копирования ключа на root@172.16.2.10:2026"
+        log_message "Ошибка копирования ключа на sshuser@172.16.2.10:2026"
     fi
 
-    sshpass -p 'toor' ssh-copy-id -p 2026 -o ConnectTimeout=10 root@172.16.1.10 2>/dev/null
+    sshpass -p 'P@ssw0rd' ssh-copy-id -p 2026 -o ConnectTimeout=10 sshuser@172.16.1.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на root@172.16.1.10:2026"
+        log_message "Ключ скопирован на sshuser@172.16.1.10:2026"
     else
-        log_message "Ошибка копирования ключа на root@172.16.1.10:2026"
+        log_message "Ошибка копирования ключа на sshuser@172.16.1.10:2026"
     fi
 
-    sshpass -p 'toor' ssh-copy-id -p 2222 -o ConnectTimeout=10 root@172.16.1.10 2>/dev/null
+    sshpass -p 'P@ssw0rd' ssh-copy-id -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10 2>/dev/null
     if [ $? -eq 0 ]; then
-        log_message "Ключ скопирован на root@172.16.1.10:2222"
+        log_message "Ключ скопирован на sshuser@172.16.1.10:2222"
     else
-        log_message "Ошибка копирования ключа на root@172.16.1.10:2222"
+        log_message "Ошибка копирования ключа на sshuser@172.16.1.10:2222"
     fi
     
     create_backup 5
@@ -297,21 +318,21 @@ if ! check_stage 6; then
     log_message "Начало этапа 6: Смена hostname удаленных машин"
     
     log_message "Смена hostname на удаленных машинах"
-    echo "hostnamectl set-hostname hq-srv.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10
+    echo "sudo hostnamectl set-hostname hq-srv.au-team.irpo" | sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.1.10
     if [ $? -eq 0 ]; then
         log_message "Hostname изменен на hq-srv.au-team.irpo (172.16.1.10:2026)"
     else
         log_message "Ошибка смены hostname на 172.16.1.10:2026"
     fi
 
-    echo "hostnamectl set-hostname hq-cli.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10
+    echo "sudo hostnamectl set-hostname hq-cli.au-team.irpo" | sshpass -p 'P@ssw0rd' ssh -t -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10
     if [ $? -eq 0 ]; then
         log_message "Hostname изменен на hq-cli.au-team.irpo (172.16.1.10:2222)"
     else
         log_message "Ошибка смены hostname на 172.16.1.10:2222"
     fi
 
-    echo "hostnamectl set-hostname br-srv.au-team.irpo" | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10
+    echo "sudo hostnamectl set-hostname br-srv.au-team.irpo" | sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10
     if [ $? -eq 0 ]; then
         log_message "Hostname изменен на br-srv.au-team.irpo (172.16.2.10:2026)"
     else
@@ -346,7 +367,7 @@ if ! check_stage 7; then
     if ! check_step "7.1_HQ-SRV-Launch"; then
         log_message "Запуск HQ-SRV-Launch.sh на удаленном хосте"
         if [ -f "HQ-SRV-Launch.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < HQ-SRV-Launch.sh
+            sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.1.10 "bash -s" < HQ-SRV-Launch.sh
             if [ $? -eq 0 ]; then
                 log_message "HQ-SRV-Launch.sh выполнен успешно"
                 mark_step_completed "7.1_HQ-SRV-Launch"
@@ -362,7 +383,7 @@ if ! check_stage 7; then
     if ! check_step "7.2_samba-part-1"; then
         log_message "Запуск samba-part-1.sh"
         if [ -f "samba-part-1.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < samba-part-1.sh
+            sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10 "bash -s" < samba-part-1.sh
             if [ $? -eq 0 ]; then
                 log_message "samba-part-1.sh выполнен успешно"
                 mark_step_completed "7.2_samba-part-1"
@@ -377,9 +398,9 @@ if ! check_stage 7; then
     # --- Шаг 7.3 Настройка клиента на DHCP ---
     if ! check_step "7.3_set-dhcp"; then
         log_message "Настройка DNS: переключение клиента в DHCP"
-        cat << EOF | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=10 root@172.16.1.10
-sed -i 's/BOOTPROTO=static/BOOTPROTO=dhcp/' /etc/net/ifaces/ens20/options
-systemctl restart network
+        cat << EOF | sshpass -p 'P@ssw0rd' ssh -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10
+sudo sed -i 's/BOOTPROTO=static/BOOTPROTO=dhcp/' /etc/net/ifaces/ens20/options
+sudo systemctl restart network
 EOF
         if [ $? -eq 0 ]; then
             log_message "Клиент переведён в DHCP"
@@ -395,10 +416,10 @@ EOF
     if ! check_step "7.4_dns-client"; then
         sleep 8
         log_message "Настройка DNS на клиенте"
-        cat << EOF | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=10 root@172.16.1.10
-apt-get update && apt-get install bind-utils admc yandex-browser -y
-system-auth write ad AU-TEAM.IRPO cli AU-TEAM 'administrator' 'P@ssw0rd'
-hostnamectl set-hostname hq-cli.au-team.irpo
+        cat << EOF | sshpass -p 'P@ssw0rd' ssh -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10
+sudo apt-get update && sudo apt-get install bind-utils admc yandex-browser -y
+sudo system-auth write ad AU-TEAM.IRPO cli AU-TEAM 'administrator' 'P@ssw0rd'
+sudo hostnamectl set-hostname hq-cli.au-team.irpo
 EOF
         if [ $? -eq 0 ]; then
             log_message "DNS настройки успешно применены"
@@ -413,7 +434,7 @@ EOF
     # --- Шаг 7.5 Перезагрузка клиента ---
     if ! check_step "7.5_reboot-client"; then
         log_message "Перезагрузка клиента"
-        echo "reboot" | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=5 root@172.16.1.10
+        echo "sudo reboot" | sshpass -p 'P@ssw0rd' ssh -p 2222 -o ConnectTimeout=5 sshuser@172.16.1.10
         log_message "Клиент перезагружается, ожидание 30 секунд"
         sleep 30
         mark_step_completed "7.5_reboot-client"
@@ -425,7 +446,7 @@ EOF
     if ! check_step "7.6_samba-part-2"; then
         log_message "Запуск samba-part-2.sh"
         if [ -f "samba-part-2.sh" ]; then
-            sshpass -p 'toor' ssh -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < samba-part-2.sh
+            sshpass -p 'P@ssw0rd' ssh -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10 "bash -s" < samba-part-2.sh
             if [ $? -eq 0 ]; then
                 log_message "samba-part-2.sh выполнен успешно"
                 mark_step_completed "7.6_samba-part-2"
@@ -442,8 +463,8 @@ EOF
     if ! check_step "7.7_cli-sssd-part1"; then
         log_message "Запуск cli-sssd-part1.sh"
         if [ -f "cli-sssd-part1.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < cli-sssd-part1.sh
-            echo "reboot" | sshpass -p 'toor' ssh -p 2222 -o ConnectTimeout=5 root@172.16.1.10
+            sshpass -p 'P@ssw0rd' ssh -t -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10 "bash -s" < cli-sssd-part1.sh
+            echo "sudo reboot" | sshpass -p 'P@ssw0rd' ssh -p 2222 -o ConnectTimeout=5 sshuser@172.16.1.10
             if [ $? -eq 0 ]; then
                 log_message "cli-sssd-part1.sh выполнен успешно"
                 mark_step_completed "7.7_cli-sssd-part1"
@@ -460,7 +481,7 @@ EOF
     if ! check_step "7.8_cli-sssd-part2"; then
         log_message "Запуск cli-sssd-part2.sh"
         if [ -f "cli-sssd-part2.sh" ]; then
-            sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < cli-sssd-part2.sh
+            sshpass -p 'P@ssw0rd' ssh -t -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10 "bash -s" < cli-sssd-part2.sh
             if [ $? -eq 0 ]; then
                 log_message "cli-sssd-part2.sh выполнен успешно"
                 mark_step_completed "7.8_cli-sssd-part2"
@@ -515,13 +536,13 @@ EOF
     fi
 
     log_message "Настройка chrony на удаленных хостах"
-    cat << EOF | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10
-which chronyd >/dev/null 2>&1 || apt-get install chrony -y
-echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
-systemctl enable --now chronyd
-systemctl restart chronyd
-sleep 5
-timedatectl
+    cat << EOF | sshpass -p 'P@ssw0rd' ssh -t -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10
+sudo which chronyd >/dev/null 2>&1 || sudo  apt-get install chrony -y
+sudo echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
+sudo systemctl enable --now chronyd
+sudo systemctl restart chronyd
+sudo sleep 5
+sudo timedatectl
 EOF
     if [ $? -eq 0 ]; then
         log_message "Chrony настроен на 172.16.1.10:2222"
@@ -529,13 +550,13 @@ EOF
         log_message "Ошибка настройки chrony на 172.16.1.10:2222"
     fi
 
-    cat << EOF | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10
-which chronyd >/dev/null 2>&1 || apt-get install chrony -y
-echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
-systemctl enable --now chronyd
-systemctl restart chronyd
-sleep 5
-timedatectl
+    cat << EOF | sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.1.10
+sudo which chronyd >/dev/null 2>&1 || sudo apt-get install chrony -y
+sudo echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
+sudo systemctl enable --now chronyd
+sudo systemctl restart chronyd
+sudo sleep 5
+sudo timedatectl
 EOF
     if [ $? -eq 0 ]; then
         log_message "Chrony настроен на 172.16.1.10:2026"
@@ -543,13 +564,13 @@ EOF
         log_message "Ошибка настройки chrony на 172.16.1.10:2026"
     fi
 
-    cat << EOF | sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10
-which chronyd >/dev/null 2>&1 || apt-get install chrony -y
-echo -e 'server 172.16.2.1 iburst prefer' > /etc/chrony.conf
-systemctl enable --now chronyd
-systemctl restart chronyd
-sleep 5
-timedatectl
+    cat << EOF | sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10
+sudo which chronyd >/dev/null 2>&1 || sudo apt-get install chrony -y
+sudo echo -e 'server 172.16.2.1 iburst prefer' > /etc/chrony.conf
+sudo systemctl enable --now chronyd
+sudo systemctl restart chronyd
+sudo sleep 5
+sudo timedatectl
 EOF
     if [ $? -eq 0 ]; then
         log_message "Chrony настроен на 172.16.2.10:2026"
@@ -570,7 +591,7 @@ if ! check_stage 9; then
     
     log_message "Настройка RAID на HQ-SRV"
     if [ -f "Raid-HQ-SRV.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < Raid-HQ-SRV.sh
+        sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.1.10 "bash -s" < Raid-HQ-SRV.sh
         if [ $? -eq 0 ]; then
             log_message "Raid-HQ-SRV.sh выполнен успешно"
         else
@@ -582,7 +603,7 @@ if ! check_stage 9; then
 
     log_message "Настройка RAID на HQ-CLI"
     if [ -f "Raid-HQ-CLI.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < Raid-HQ-CLI.sh
+        sshpass -p 'P@ssw0rd' ssh -t -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10 "bash -s" < Raid-HQ-CLI.sh
         if [ $? -eq 0 ]; then
             log_message "Raid-HQ-CLI.sh выполнен успешно"
         else
@@ -607,7 +628,7 @@ if ! check_stage 10; then
     
     log_message "Установка Ansible на BR-SRV"
     if [ -f "Ansible-BR-SRV.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < Ansible-BR-SRV.sh
+        sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10 "bash -s" < Ansible-BR-SRV.sh
         if [ $? -eq 0 ]; then
             log_message "Ansible-BR-SRV.sh выполнен успешно"
         else
@@ -632,7 +653,7 @@ if ! check_stage 11; then
     
     log_message "Копирование site.yml на BR-SRV"
     if [ -f "site.yml" ]; then
-        scp -P 2026 -o ConnectTimeout=10 site.yml root@172.16.2.10:/root/site.yml
+        scp -P 2026 -o ConnectTimeout=10 site.yml sshuser@172.16.2.10:/root/site.yml
         if [ $? -eq 0 ]; then
             log_message "site.yml успешно скопирован на BR-SRV"
         else
@@ -644,7 +665,7 @@ if ! check_stage 11; then
 
     log_message "Установка Docker на BR-SRV"
     if [ -f "docker.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.2.10 "bash -s" < docker.sh
+        sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10 "bash -s" < docker.sh
         if [ $? -eq 0 ]; then
             log_message "docker.sh выполнен успешно"
         else
@@ -680,7 +701,7 @@ if ! check_stage 12; then
     
     log_message "Установка сайта на HQ-SRV"
     if [ -f "site.sh" ]; then
-        sshpass -p 'toor' ssh -t -p 2026 -o ConnectTimeout=10 root@172.16.1.10 "bash -s" < site.sh
+        sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.1.10 "bash -s" < site.sh
         if [ $? -eq 0 ]; then
             log_message "site.sh выполнен успешно"
         else
@@ -795,7 +816,7 @@ if ! check_stage 14; then
     log_message "Начало этапа 14: Установка Yandex Browser на HQ-CLI"
     
     log_message "Установка Yandex Browser на HQ-CLI"
-    echo "apt-get update && apt-get install yandex-browser -y" | sshpass -p 'toor' ssh -t -p 2222 -o ConnectTimeout=10 root@172.16.1.10
+    echo "sudo apt-get update && sudo apt-get install yandex-browser -y" | sshpass -p 'P@ssw0rd' ssh -t -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10
     if [ $? -eq 0 ]; then
         log_message "Yandex Browser успешно установлен на HQ-CLI"
     else
@@ -840,24 +861,23 @@ EOF
     fi
 
 
-    cat << EOF | sshpass -p 'toor' ssh -p 2026 root@172.16.1.10
-    echo -e 'AllowUsers sshuser\nMaxAuthTries 2\nBanner /root/banner' >> /etc/openssh/sshd_config
+    cat << EOF | sshpass -p 'P@ssw0rd' ssh -p 2026 sshuser@172.16.1.10
+    echo -e 'MaxAuthTries 2\nBanner /root/banner' >> /etc/openssh/sshd_config
     echo 'Authorized Access Only' > /root/banner
-    sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
-    if ! id sshuser | grep wheel; then
-    gpasswd -a 'sshuser' wheel
+    if ! sudo id sshuser | grep wheel; then
+    sudo gpasswd -a 'sshuser' wheel
     fi
-    systemctl restart sshd
+    sudo systemctl restart sshd
 EOF
 
-    cat << EOF | sshpass -p 'toor' ssh -p 2026 root@172.16.2.10
-    echo -e 'AllowUsers sshuser\nMaxAuthTries 2\nBanner /root/banner' >> /etc/openssh/sshd_config
-    echo 'Authorized Access Only' > /root/banner
-    sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
-    if ! id sshuser | grep wheel; then
-    gpasswd -a 'sshuser' wheel
+    cat << EOF | sshpass -p 'P@ssw0rd' ssh -p 2026 sshuser@172.16.2.10
+    sudo echo -e 'MaxAuthTries 2\nBanner /root/banner' >> /etc/openssh/sshd_config
+    sudo echo 'Authorized Access Only' > /root/banner
+    sudo sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
+    if ! sudo id sshuser | grep wheel; then
+    sudo gpasswd -a 'sshuser' wheel
     fi
-    systemctl restart sshd
+    sudo systemctl restart sshd
 EOF
 else
     log_message "Этап 15 уже выполнен, пропускаем"
