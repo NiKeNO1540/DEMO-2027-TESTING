@@ -67,8 +67,8 @@ systemctl restart network
 
 ```bash
 echo 'TYPE=eth' > /etc/net/ifaces/enp7s1/options 
-echo 192.168.3.10/28 > /etc/net/ifaces/enp7s1/ipv4address
-echo default via 192.168.3.1 > /etc/net/ifaces/enp7s1/ipv4route
+echo 192.168.2.10/28 > /etc/net/ifaces/enp7s1/ipv4address
+echo default via 192.168.2.1 > /etc/net/ifaces/enp7s1/ipv4route
 systemctl restart network
 ```
 
@@ -76,8 +76,8 @@ systemctl restart network
 
 ```bash
 echo 'TYPE=eth' > /etc/net/ifaces/enp7s1/options 
-echo 192.168.2.10/28 > /etc/net/ifaces/enp7s1/ipv4address 
-echo default via 192.168.2.1 > /etc/net/ifaces/enp7s1/ipv4route 
+echo 192.168.3.10/28 > /etc/net/ifaces/enp7s1/ipv4address 
+echo default via 192.168.3.1 > /etc/net/ifaces/enp7s1/ipv4route 
 systemctl restart network
 ```
 
