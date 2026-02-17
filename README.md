@@ -93,8 +93,7 @@ systemctl enable --now sshd
 systemctl restart sshd
 useradd sshuser -u 2026
 echo -e "sshuser:P@ssw0rd" | chpasswd
-visudo
-# Пишите 140, потом Shift+G > Стрелка вправо > Нажать "D" затем стрелка вправо > :wq
+sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 gpasswd -a "sshuser" wheel
 ```
 
@@ -105,8 +104,7 @@ systemctl enable --now sshd
 systemctl restart sshd
 useradd sshuser
 echo -e "sshuser:P@ssw0rd" | chpasswd
-visudo
-# Пишите 140, потом Shift+G > Стрелка вправо > Нажать "D" затем стрелка вправо > :wq
+sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 gpasswd -a "sshuser" wheel
 ```
 
