@@ -653,7 +653,7 @@ if ! check_stage 11; then
     
     log_message "Копирование site.yml на BR-SRV"
     if [ -f "site.yml" ]; then
-        scp -P 2026 -o ConnectTimeout=10 site.yml sshuser@172.16.2.10:/root/site.yml
+        scp -P 2026 -o ConnectTimeout=10 site.yml sshuser@172.16.2.10:~/site.yml
         if [ $? -eq 0 ]; then
             log_message "site.yml успешно скопирован на BR-SRV"
         else
