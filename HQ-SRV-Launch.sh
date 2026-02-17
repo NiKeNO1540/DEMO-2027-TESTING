@@ -54,6 +54,20 @@ br-rtr  IN      A       192.168.3.1
 br-srv  IN      A       192.168.3.10
 docker  IN      A       172.16.1.1
 web     IN      A       172.16.2.1
+_ldap._tcp              IN      SRV     0 100 389  br-srv.au-team.irpo.
+_kerberos._tcp          IN      SRV     0 100 88   br-srv.au-team.irpo.
+_kerberos._udp          IN      SRV     0 100 88   br-srv.au-team.irpo.
+_kerberos-master._tcp   IN      SRV     0 100 88   br-srv.au-team.irpo.
+_kerberos-master._udp   IN      SRV     0 100 88   br-srv.au-team.irpo.
+_kpasswd._tcp           IN      SRV     0 100 464  br-srv.au-team.irpo.
+_kpasswd._udp           IN      SRV     0 100 464  br-srv.au-team.irpo.
+_ldap._tcp.dc._msdcs    IN      SRV     0 100 389  br-srv.au-team.irpo.
+_gc._tcp                IN      SRV     0 100 3268 br-srv.au-team.irpo.
+_ldap._tcp.Default-First-Site-Name._sites  IN  SRV  0 100 389  br-srv.au-team.irpo.
+_ldap._tcp.Default-First-Site-Name._sites.dc._msdcs  IN  SRV  0 100 389  br-srv.au-team.irpo.
+_ldap._tcp.Default-First-Site-Name._sites.gc._msdcs  IN  SRV  0 100 3268 br-srv.au-team.irpo.
+_kerberos._tcp.Default-First-Site-Name._sites  IN  SRV  0 100 88  br-srv.au-team.irpo.
+_kerberos._tcp.Default-First-Site-Name._sites.dc._msdcs  IN  SRV  0 100 88  br-srv.au-team.irpo.
 EOF
 
 sed -i '14d' 1.168.192.in-addr.arpa
