@@ -236,17 +236,17 @@ if ! check_stage 4; then
             cat << EOF | sshpass -p 'P@ssw0rd' ssh net_admin@172.16.1.10
             sudo hostnamectl hostname hq-rtr.au-team.irpo; exec bash
             sudo mkdir -p /etc/net/ifaces/enp7s2
-            sudo echo 'TYPE=eth' | tee /etc/net/ifaces/enp7s2/options
+            echo 'TYPE=eth' | sudo tee /etc/net/ifaces/enp7s2/options
             sudo mkdir -p /etc/net/ifaces/vlan100
             sudo mkdir -p /etc/net/ifaces/vlan200
             sudo mkdir -p /etc/net/ifaces/vlan999
-            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=100' > /etc/net/ifaces/vlan100/options
-            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=200' > /etc/net/ifaces/vlan200/options
-            sudo echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=999' > /etc/net/ifaces/vlan999/options
-            sudo echo '192.168.1.1/27' > /etc/net/ifaces/vlan100/ipv4address
-            sudo echo '192.168.2.1/28' > /etc/net/ifaces/vlan200/ipv4address
-            sudo echo '192.168.99.1/29' > /etc/net/ifaces/vlan999/ipv4address
-            sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
+            echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=100' | sudo tee /etc/net/ifaces/vlan100/options > /dev/null
+            echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=200' | sudo tee /etc/net/ifaces/vlan200/options > /dev/null
+            echo -e 'TYPE=vlan\nHOST=enp7s2\nVID=999' | sudo tee /etc/net/ifaces/vlan999/options > /dev/null
+            echo '192.168.1.1/27' | sudo tee /etc/net/ifaces/vlan100/ipv4address > /dev/null
+            echo '192.168.2.1/28' | sudo tee /etc/net/ifaces/vlan200/ipv4address > /dev/null
+            echo '192.168.99.1/29' | sudo tee /etc/net/ifaces/vlan999/ipv4address > /dev/null
+            sudo sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
             sudo systemctl restart network
 EOF
         else
@@ -260,9 +260,9 @@ EOF
             log_message "br-rtr-module-1.exp выполнен успешно"
             cat << EOF | sshpass -p "P@ssw0rd" ssh net_admin@172.16.2.10
             sudo mkdir /etc/net/ifaces/enp7s2
-            sudo echo 'TYPE=eth' > /etc/net/ifaces/enp7s2/options
-            sudo echo 192.168.3.1/28 > /etc/net/ifaces/enp7s2/ipv4address
-            sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
+            echo 'TYPE=eth' | sudo tee /etc/net/ifaces/enp7s2/options > /dev/null
+            echo 192.168.3.1/28 | sudo tee /etc/net/ifaces/enp7s2/ipv4address > /dev/null
+            sudo sed -i 's/net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf
             sudo systemctl restart network
 EOF
         else
@@ -541,7 +541,7 @@ EOF
     log_message "Настройка chrony на удаленных хостах"
     cat << EOF | sshpass -p 'P@ssw0rd' ssh -t -p 2222 -o ConnectTimeout=10 sshuser@172.16.1.10
 sudo which chronyd >/dev/null 2>&1 || sudo  apt-get install chrony -y
-sudo echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
+echo -e 'server 172.16.1.1 iburst prefer' | sudo tee /etc/chrony.conf > /dev/null
 sudo systemctl enable --now chronyd
 sudo systemctl restart chronyd
 sudo sleep 5
@@ -555,7 +555,7 @@ EOF
 
     cat << EOF | sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.1.10
 sudo which chronyd >/dev/null 2>&1 || sudo apt-get install chrony -y
-sudo echo -e 'server 172.16.1.1 iburst prefer' > /etc/chrony.conf
+echo -e 'server 172.16.1.1 iburst prefer' | sudo tee /etc/chrony.conf > /dev/null
 sudo systemctl enable --now chronyd
 sudo systemctl restart chronyd
 sudo sleep 5
@@ -569,7 +569,7 @@ EOF
 
     cat << EOF | sshpass -p 'P@ssw0rd' ssh -t -p 2026 -o ConnectTimeout=10 sshuser@172.16.2.10
 sudo which chronyd >/dev/null 2>&1 || sudo apt-get install chrony -y
-sudo echo -e 'server 172.16.2.1 iburst prefer' > /etc/chrony.conf
+echo -e 'server 172.16.2.1 iburst prefer' | sudo tee /etc/chrony.conf
 sudo systemctl enable --now chronyd
 sudo systemctl restart chronyd
 sudo sleep 5
@@ -874,8 +874,8 @@ EOF
 EOF
 
     cat << EOF | sshpass -p 'P@ssw0rd' ssh -p 2026 sshuser@172.16.2.10
-    sudo echo -e 'MaxAuthTries 2\nBanner /root/banner' >> /etc/openssh/sshd_config
-    sudo echo 'Authorized Access Only' > /root/banner
+    echo -e 'MaxAuthTries 2\nBanner /root/banner' | sudo tee /etc/openssh/sshd_config > /dev/null
+    echo 'Authorized Access Only' | sudo tee /root/banner
     sudo sed -i 's/# WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/WHEEL_USERS ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
     if ! sudo id sshuser | grep wheel; then
     sudo gpasswd -a 'sshuser' wheel
