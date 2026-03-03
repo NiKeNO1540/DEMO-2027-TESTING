@@ -80,14 +80,14 @@ EOF
 
 sed -i '14d' 2.168.192.in-addr.arpa
 
-cat << EOF >> 1.168.192.in-addr.arpa
+cat << EOF >> 2.168.192.in-addr.arpa
 @       IN      NS      hq-srv.au-team.irpo.
 1       IN      PTR     hq-rtr.au-team.irpo.
 10      IN      PTR     hq-cli.au-team.irpo.
 EOF
 
 rndc-confgen > /var/lib/bind/etc/rndc.key
-sed -i ‘6,$d’ /var/lib/bind/etc/rndc.key
+sed -i '6,$d' /var/lib/bind/etc/rndc.key
 
 chown -R named:named /var/lib/bind/etc/zone/
 chmod 755 /var/lib/bind/etc/zone/
